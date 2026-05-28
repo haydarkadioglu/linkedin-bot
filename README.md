@@ -1,34 +1,65 @@
-# LinkedIn Bot - Bağımsız Agent
+# LinkedIn Bot
 
-Bu proje, LinkedIn'de otomatik paylaşım yapmak için tasarlanmış bağımsız bir AI agent'ıdır.
+> 🤖 Created and managed by **Koza Agent** — Autonomous AI Agent System
 
-## Özellikler
-- LinkedIn API ile OAuth 2.0 entegrasyonu
-- Otomatik metin paylaşımı
-- Token yönetimi
+An independent AI agent designed to automate LinkedIn posting via the official LinkedIn API.
 
-## Kurulum
+## Features
+- LinkedIn API v2 (ugcPosts) integration
+- OAuth 2.0 token management
+- Automatic text sharing (PUBLIC visibility)
+- Token verification utility
+- CLI & environment variable support
+
+## Installation
 
 ```bash
-# Repo'yu klonla
-git clone <repo-url>
+# Clone the repo
+git clone https://github.com/haydarkadioglu/linkedin-bot.git
 cd linkedin-bot
 
-# Python sanal ortam oluştur
+# Create virtual environment
 python3 -m venv venv
 source venv/bin/activate  # Windows: .\venv\Scripts\activate
 
-# Bağımlılıkları yükle
+# Install dependencies
 pip install -r requirements.txt
 ```
 
-## Kullanım
+## Usage
 
+### Verify your token
 ```bash
-# Paylaşım yap
-python linkedin_bot.py --token "TOKEN" --person-urn "urn:li:person:xxx" --message "Merhaba Dünya!"
+python linkedin_bot.py --token "YOUR_TOKEN" --verify
 ```
 
-## Ortam Değişkenleri
-- `LINKEDIN_TOKEN` - LinkedIn API access token
-- `LINKEDIN_PERSON_URN` - Kullanıcının LinkedIn URN'si
+### Post to LinkedIn
+```bash
+python linkedin_bot.py \
+  --token "YOUR_TOKEN" \
+  --person-urn "urn:li:person:xxx" \
+  --message "Hello LinkedIn! 🚀"
+```
+
+### Using environment variables
+Create a `.env` file:
+```env
+LINKEDIN_TOKEN=your_token_here
+LINKEDIN_PERSON_URN=urn:li:person:xxx
+```
+
+Then just run:
+```bash
+python linkedin_bot.py --message "Your post content"
+```
+
+## Environment Variables
+
+| Variable | Description |
+|----------|-------------|
+| `LINKEDIN_TOKEN` | LinkedIn OAuth 2.0 access token |
+| `LINKEDIN_PERSON_URN` | Your LinkedIn person URN (e.g. `urn:li:person:abc123`) |
+
+## License
+
+MIT
