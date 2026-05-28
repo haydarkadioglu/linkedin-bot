@@ -1,6 +1,7 @@
 # LinkedIn Bot
 
-> 🤖 Created and managed by **Koza Agent** — Autonomous AI Agent System
+> 🤖 Created and managed by **Koza Agent** — [github.com/haydarkadioglu/koza-agent](https://github.com/haydarkadioglu/koza-agent)  
+> An autonomous AI agent system that builds and manages other agents.
 
 An independent AI agent designed to automate LinkedIn posting via the official LinkedIn API.  
 Comes with built-in **AI content generation** via multiple providers.

@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """
 LinkedIn Bot — Autonomous AI Agent
-Powered by Koza Agent. Fully independent with AI content generation.
+Powered by Koza Agent (https://github.com/haydarkadioglu/koza-agent).
+Fully independent with AI content generation.
 """
 
 import os
@@ -45,7 +46,7 @@ SUPPORTED_PROVIDERS = {
 
 
 def get_provider_config():
-    """Read provider settings from environment."""
+    """Read provider settings from environment variables."""
     provider = os.getenv("AI_PROVIDER", "openai").lower()
     api_key = os.getenv("AI_API_KEY", "")
     model = os.getenv("AI_MODEL", "")
@@ -68,17 +69,20 @@ def get_provider_config():
 def generate_content(prompt: str, system_prompt: str = "") -> str:
     """
     Generate text using the configured AI provider (OpenAI-compatible API).
-    Returns the generated content string.
+
+    Args:
+        prompt: The user prompt.
+        system_prompt: Optional system-level instruction.
+
+    Returns:
+        Generated text content.
     """
     provider, config = get_provider_config()
     model = config.get("default_model")
     api_key = config.get("api_key", "")
     base_url = config.get("base_url")
 
-    headers = {
-        "Content-Type": "application/json",
-    }
-
+    headers = {"Content-Type": "application/json"}
     if api_key:
         headers["Authorization"] = f"Bearer {api_key}"
 
@@ -114,7 +118,7 @@ def generate_content(prompt: str, system_prompt: str = "") -> str:
 
 
 def auto_generate_topic() -> str:
-    """Auto-generate a LinkedIn post topic."""
+    """Auto-generate a short, engaging LinkedIn post topic."""
     return generate_content(
         "Suggest one short, engaging LinkedIn post topic about technology, productivity, or AI trends. "
         "Just give the topic title, nothing else.",
@@ -123,7 +127,16 @@ def auto_generate_topic() -> str:
 
 
 def generate_post(topic: str = "", style: str = "professional") -> str:
-    """Generate a full LinkedIn post on the given topic."""
+    """
+    Generate a full LinkedIn post on a given topic with a specified style.
+
+    Args:
+        topic: The post topic. Auto-generated if empty.
+        style: Writing style (professional, casual, inspirational).
+
+    Returns:
+        The full post text.
+    """
     prompt = (
         f"Write a LinkedIn post about: {topic or 'a trending tech topic'}\n"
         f"Style: {style}\n"
@@ -137,7 +150,15 @@ def generate_post(topic: str = "", style: str = "professional") -> str:
 
 def post_to_linkedin(token: str, person_urn: str, message: str) -> dict:
     """
-    LinkedIn v2 API (ugcPosts) ile metin paylaşımı yapar.
+    Post a text update to LinkedIn via the v2 ugcPosts API.
+
+    Args:
+        token: LinkedIn OAuth access token.
+        person_urn: The author's LinkedIn URN (e.g. urn:li:person:xxx).
+        message: The post content.
+
+    Returns:
+        API response dict with status and post_id on success.
     """
     headers = {
         "Authorization": f"Bearer {token}",
@@ -175,7 +196,7 @@ def post_to_linkedin(token: str, person_urn: str, message: str) -> dict:
 
 
 def verify_token(token: str) -> dict:
-    """Verify LinkedIn token and return person info."""
+    """Verify a LinkedIn access token and return user info."""
     r = requests.get(
         "https://api.linkedin.com/v2/userinfo",
         headers={"Authorization": f"Bearer {token}"},
@@ -192,46 +213,46 @@ def main():
     parser = argparse.ArgumentParser(description="LinkedIn Bot — Autonomous AI Agent")
     parser.add_argument("--token", help="LinkedIn access token", default=os.getenv("LINKEDIN_TOKEN"))
     parser.add_argument("--person-urn", help="LinkedIn person URN", default=os.getenv("LINKEDIN_PERSON_URN"))
-    parser.add_argument("--message", help="Post message (optional if AI mode)")
+    parser.add_argument("--message", help="Post message (optional if --ai is used)")
     parser.add_argument("--topic", help="Topic for AI-generated post")
     parser.add_argument("--style", help="Post style: professional | casual | inspirational", default="professional")
     parser.add_argument("--ai", help="Auto-generate post with AI", action="store_true")
-    parser.add_argument("--verify", help="Only verify token", action="store_true")
+    parser.add_argument("--verify", help="Only verify the token", action="store_true")
     parser.add_argument("--list-providers", help="List supported AI providers and exit", action="store_true")
-    parser.add_argument("--provider", help="Override AI_PROVIDER env")
+    parser.add_argument("--provider", help="Override AI_PROVIDER env variable")
 
     args = parser.parse_args()
 
-    # ── List providers ──
+    # List supported providers
     if args.list_providers:
         print("Supported AI providers:")
         for name, cfg in SUPPORTED_PROVIDERS.items():
             print(f"  • {name} — default model: {cfg['default_model']}")
         sys.exit(0)
 
-    # ── Token ──
+    # Token
     token = args.token or os.getenv("LINKEDIN_TOKEN")
     if not token:
         log.error("❌ No token. Use --token or LINKEDIN_TOKEN env.")
         sys.exit(1)
 
-    # ── Verify ──
+    # Verify-only mode
     if args.verify:
         result = verify_token(token)
         print(json.dumps(result, indent=2))
         sys.exit(0 if result["status"] == "success" else 1)
 
-    # ── Person URN ──
+    # Person URN
     person_urn = args.person_urn or os.getenv("LINKEDIN_PERSON_URN")
     if not person_urn:
         log.error("❌ No person URN. Use --person-urn or LINKEDIN_PERSON_URN env.")
         sys.exit(1)
 
-    # ── Provider override ──
+    # Provider override
     if args.provider:
         os.environ["AI_PROVIDER"] = args.provider
 
-    # ── Generate or use message ──
+    # Generate or use provided message
     if args.ai:
         topic = args.topic or auto_generate_topic()
         log.info(f"📝 Generated topic: {topic}")
@@ -243,7 +264,7 @@ def main():
         log.error("❌ Provide --message or use --ai for AI generation.")
         sys.exit(1)
 
-    # ── Post ──
+    # Post to LinkedIn
     result = post_to_linkedin(token, person_urn, message)
 
     if result["status"] == "success":
